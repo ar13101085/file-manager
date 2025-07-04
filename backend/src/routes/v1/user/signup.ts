@@ -1,18 +1,19 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { check, validationResult } from 'express-validator/check';
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { DefaultPayloadModel } from 'src/types/default-payload';
+import { DefaultPayloadModel } from '../../../types/default-payload';
 import { GeneralError } from '../../../utils/errors';
+import { UserModel } from '../../../models/User';
+import { SessionModel } from '../../../models/Session';
+import { hasUsers } from '../../../config/database';
+import { AuthTokenPayload } from '../../../types/user.types';
 
 const router = express.Router();
 
-// In-memory user storage (replace with proper database in production)
-export const users = new Map<string, { id: string; userName: string; password: string }>();
-
 router.post("/signup",
     [
-        check("userName", "Please include a valid email").isLength({ min: 0 }),
+        check("username", "Username is required").isLength({ min: 3 }),
+        check("email", "Please include a valid email").isEmail(),
         check(
             "password",
             "Please enter a password with 6 or more characters"
@@ -21,49 +22,78 @@ router.post("/signup",
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                throw new GeneralError("invalid input.please check your data.");
+                throw new GeneralError("Invalid input. Please check your data.");
             }
 
-            const { userName, password } = req.body;
+            const { username, email, password } = req.body;
 
-            // Check if user exists
-            if (users.has(userName)) {
-                throw new GeneralError("User already exists");
+            // Check if this is the first user (will be admin)
+            const isFirstUser = !(await hasUsers());
+
+            // If not first user, check if request is coming from an admin
+            if (!isFirstUser) {
+                // This endpoint should only be accessible to create the first admin
+                throw new GeneralError("User registration is disabled. Please contact admin.");
             }
 
-            const salt = await bcrypt.genSalt(10);
-            const hashed = await bcrypt.hash(password, salt);
+            // Check if username already exists
+            const existingUserByUsername = await UserModel.findByUsername(username);
+            if (existingUserByUsername) {
+                throw new GeneralError("Username already exists");
+            }
 
-            // Create new user
-            const userId = Date.now().toString();
-            const newUser = {
-                id: userId,
-                userName,
-                password: hashed
+            // Check if email already exists
+            const existingUserByEmail = await UserModel.findByEmail(email);
+            if (existingUserByEmail) {
+                throw new GeneralError("Email already exists");
+            }
+
+            // Create new user (first user is always admin)
+            const newUser = await UserModel.create({
+                username,
+                email,
+                password,
+                role: isFirstUser ? 'admin' : 'user'
+            });
+
+            // Create JWT payload
+            const payload: AuthTokenPayload = {
+                userId: newUser.id,
+                username: newUser.username,
+                role: newUser.role
             };
 
-            // Save user
-            users.set(userName, newUser);
-
-            const payload: any = {
-                userId: userId
-            };
-
-            jwt.sign(
+            // Generate token
+            const token = jwt.sign(
                 payload,
                 process.env.JWT_SECRET_KEY || "",
-                { expiresIn: "7d" },
-                (err, token) => {
-                    if (err) throw err;
-
-                    let response: DefaultPayloadModel<string | undefined> = {
-                        isSuccess: true,
-                        msg: "Successfully create account & generate token",
-                        data: token
-                    }
-                    res.json(response);
-                }
+                { expiresIn: "7d" }
             );
+
+            // Save session
+            await SessionModel.create(newUser.id, token);
+
+            // Update last login
+            await UserModel.updateLastLogin(newUser.id);
+
+            const response: DefaultPayloadModel<{ token: string; user: any }> = {
+                isSuccess: true,
+                msg: isFirstUser 
+                    ? "Successfully created admin account" 
+                    : "Successfully created account",
+                data: {
+                    token,
+                    user: {
+                        id: newUser.id,
+                        username: newUser.username,
+                        email: newUser.email,
+                        role: newUser.role,
+                        permissions: newUser.permissions
+                    }
+                }
+            };
+
+            res.json(response);
         } catch (error) {
             next(error);
         }

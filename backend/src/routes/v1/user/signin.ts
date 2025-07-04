@@ -1,48 +1,76 @@
 import express, { NextFunction, Response, Request } from 'express';
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { DefaultPayloadModel } from 'src/types/default-payload';
+import { DefaultPayloadModel } from '../../../types/default-payload';
 import { GeneralError, NotFound } from '../../../utils/errors';
-import { users } from './signup';
+import { UserModel } from '../../../models/User';
+import { SessionModel } from '../../../models/Session';
+import { AuthTokenPayload } from '../../../types/user.types';
 
 const router = express.Router();
 
 router.post("/signin", async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let { userName, password }: { userName: string, password: string } = req.body;
+        const { username, password }: { username: string, password: string } = req.body;
         
-        // Find user
-        const user = users.get(userName);
+        if (!username || !password) {
+            throw new GeneralError("Username and password are required");
+        }
+
+        // Find user by username
+        const user = await UserModel.findByUsername(username);
         
         if (!user) {
-            throw new NotFound("No user found.")
+            throw new NotFound("Invalid username or password");
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        // Check if user is active
+        if (!user.isActive) {
+            throw new GeneralError("Account is disabled. Please contact admin.");
+        }
+
+        // Verify password
+        const isMatch = await UserModel.verifyPassword(user, password);
 
         if (!isMatch) {
-            throw new GeneralError("Email or password is invalid");
+            throw new GeneralError("Invalid username or password");
         }
 
-        const payload: any = {
-            userId: user.id
+        // Create JWT payload
+        const payload: AuthTokenPayload = {
+            userId: user.id,
+            username: user.username,
+            role: user.role
         };
 
-        jwt.sign(
+        // Generate token
+        const token = jwt.sign(
             payload,
             process.env.JWT_SECRET_KEY || "",
-            { expiresIn: "7d" },
-            (err, token) => {
-                if (err) throw err;
-
-                let response: DefaultPayloadModel<any> = {
-                    isSuccess: true,
-                    msg: "Successfully generate token",
-                    data: token
-                }
-                res.json(response);
-            }
+            { expiresIn: "7d" }
         );
+
+        // Save session
+        await SessionModel.create(user.id, token);
+
+        // Update last login
+        await UserModel.updateLastLogin(user.id);
+
+        const response: DefaultPayloadModel<{ token: string; user: any }> = {
+            isSuccess: true,
+            msg: "Successfully logged in",
+            data: {
+                token,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role,
+                    permissions: user.permissions
+                }
+            }
+        };
+
+        res.json(response);
 
     } catch (error) {
         next(error);

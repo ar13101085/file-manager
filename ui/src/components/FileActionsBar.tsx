@@ -2,6 +2,7 @@ import React from 'react';
 import { Upload, FolderPlus, Download, Archive, Trash2, Edit3, FolderInput } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useFileManager } from '../contexts/FileManagerContext';
+import { useAuth } from '../contexts/AuthContext';
 import { FileActionsBarMobile } from './FileActionsBarMobile';
 
 interface FileActionsBarProps {
@@ -24,6 +25,7 @@ export const FileActionsBar: React.FC<FileActionsBarProps> = ({
   onDownload,
 }) => {
   const { selectedFiles } = useFileManager();
+  const { hasPermission } = useAuth();
   const hasSelection = selectedFiles.length > 0;
   const singleSelection = selectedFiles.length === 1;
 
@@ -45,116 +47,134 @@ export const FileActionsBar: React.FC<FileActionsBarProps> = ({
         
         {/* Desktop view with all buttons */}
         <div className="hidden sm:flex flex-wrap items-center gap-2">
-        <button
-          onClick={onUpload}
-          className={cn(
-            "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
-            "text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300",
-            "dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          )}
-        >
-          <Upload className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span>Upload</span>
-        </button>
+        {hasPermission('canUpload') && (
+          <button
+            onClick={onUpload}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
+              "text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300",
+              "dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            )}
+          >
+            <Upload className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span>Upload</span>
+          </button>
+        )}
         
-        <button
-          onClick={onCreateFolder}
-          className={cn(
-            "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
-            "text-gray-900 bg-white border border-gray-300 hover:bg-gray-100",
-            "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
-            "dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700"
-          )}
-        >
-          <FolderPlus className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span>New Folder</span>
-        </button>
+        {hasPermission('canCreateFolder') && (
+          <button
+            onClick={onCreateFolder}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
+              "text-gray-900 bg-white border border-gray-300 hover:bg-gray-100",
+              "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
+              "dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700"
+            )}
+          >
+            <FolderPlus className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span>New Folder</span>
+          </button>
+        )}
 
-        <div className="hidden sm:block h-6 w-px bg-gray-300 dark:bg-gray-600" />
+        {(hasPermission('canUpload') || hasPermission('canCreateFolder')) && 
+         (hasPermission('canDownload') || hasPermission('canArchive') || 
+          hasPermission('canRename') || hasPermission('canMove') || hasPermission('canDelete')) && (
+          <div className="hidden sm:block h-6 w-px bg-gray-300 dark:bg-gray-600" />
+        )}
 
-        <button
-          onClick={onDownload}
-          disabled={!hasSelection}
-          className={cn(
-            "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
-            "text-gray-900 bg-white border border-gray-300",
-            "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
-            "dark:border-gray-600 dark:focus:ring-gray-700",
-            hasSelection
-              ? "hover:bg-gray-100 dark:hover:bg-gray-700"
-              : "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <Download className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span>Download</span>
-        </button>
+        {hasPermission('canDownload') && (
+          <button
+            onClick={onDownload}
+            disabled={!hasSelection}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
+              "text-gray-900 bg-white border border-gray-300",
+              "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
+              "dark:border-gray-600 dark:focus:ring-gray-700",
+              hasSelection
+                ? "hover:bg-gray-100 dark:hover:bg-gray-700"
+                : "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <Download className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span>Download</span>
+          </button>
+        )}
 
-        <button
-          onClick={onArchive}
-          disabled={!hasSelection}
-          className={cn(
-            "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
-            "text-gray-900 bg-white border border-gray-300",
-            "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
-            "dark:border-gray-600 dark:focus:ring-gray-700",
-            hasSelection
-              ? "hover:bg-gray-100 dark:hover:bg-gray-700"
-              : "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <Archive className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span>Archive</span>
-        </button>
+        {hasPermission('canArchive') && (
+          <button
+            onClick={onArchive}
+            disabled={!hasSelection}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
+              "text-gray-900 bg-white border border-gray-300",
+              "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
+              "dark:border-gray-600 dark:focus:ring-gray-700",
+              hasSelection
+                ? "hover:bg-gray-100 dark:hover:bg-gray-700"
+                : "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <Archive className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span>Archive</span>
+          </button>
+        )}
 
-        <button
-          onClick={onRename}
-          disabled={!singleSelection}
-          className={cn(
-            "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
-            "text-gray-900 bg-white border border-gray-300",
-            "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
-            "dark:border-gray-600 dark:focus:ring-gray-700",
-            singleSelection
-              ? "hover:bg-gray-100 dark:hover:bg-gray-700"
-              : "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <Edit3 className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span className="hidden sm:inline">Rename</span>
-          <span className="sm:hidden">Ren</span>
-        </button>
+        {hasPermission('canRename') && (
+          <button
+            onClick={onRename}
+            disabled={!singleSelection}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
+              "text-gray-900 bg-white border border-gray-300",
+              "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
+              "dark:border-gray-600 dark:focus:ring-gray-700",
+              singleSelection
+                ? "hover:bg-gray-100 dark:hover:bg-gray-700"
+                : "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <Edit3 className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="hidden sm:inline">Rename</span>
+            <span className="sm:hidden">Ren</span>
+          </button>
+        )}
 
-        <button
-          onClick={onMove}
-          disabled={!hasSelection}
-          className={cn(
-            "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
-            "text-gray-900 bg-white border border-gray-300",
-            "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
-            "dark:border-gray-600 dark:focus:ring-gray-700",
-            hasSelection
-              ? "hover:bg-gray-100 dark:hover:bg-gray-700"
-              : "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <FolderInput className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span>Move</span>
-        </button>
+        {hasPermission('canMove') && (
+          <button
+            onClick={onMove}
+            disabled={!hasSelection}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
+              "text-gray-900 bg-white border border-gray-300",
+              "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
+              "dark:border-gray-600 dark:focus:ring-gray-700",
+              hasSelection
+                ? "hover:bg-gray-100 dark:hover:bg-gray-700"
+                : "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <FolderInput className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span>Move</span>
+          </button>
+        )}
 
-        <button
-          onClick={onDelete}
-          disabled={!hasSelection}
-          className={cn(
-            "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
-            "text-white bg-red-600 focus:ring-4",
-            hasSelection
-              ? "hover:bg-red-700 focus:ring-red-300 dark:hover:bg-red-700 dark:focus:ring-red-900"
-              : "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <Trash2 className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span>Delete</span>
-        </button>
+        {hasPermission('canDelete') && (
+          <button
+            onClick={onDelete}
+            disabled={!hasSelection}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap",
+              "text-white bg-red-600 focus:ring-4",
+              hasSelection
+                ? "hover:bg-red-700 focus:ring-red-300 dark:hover:bg-red-700 dark:focus:ring-red-900"
+                : "opacity-50 cursor-not-allowed"
+            )}
+          >
+            <Trash2 className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span>Delete</span>
+          </button>
+        )}
       </div>
       </div>
     </div>
