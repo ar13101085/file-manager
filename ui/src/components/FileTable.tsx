@@ -74,7 +74,7 @@ interface FileTableProps {
 export const FileTable: React.FC<FileTableProps> = ({ onRename, onMove, onArchive, onDelete, onDownload }) => {
   const navigate = useNavigate();
   const toast = useToastContext();
-  const { files, toggleFileSelection, selectAllFiles, clearSelection, selectedFiles, setFiles } = useFileManager();
+  const { sortedFiles, toggleFileSelection, selectAllFiles, clearSelection, selectedFiles, setFiles, files } = useFileManager();
 
   const allSelected = files.length > 0 && files.every(file => file.isSelected);
   const someSelected = selectedFiles.length > 0 && !allSelected;
@@ -149,7 +149,7 @@ export const FileTable: React.FC<FileTableProps> = ({ onRename, onMove, onArchiv
               </td>
             </tr>
           ) : (
-            files.map((file) => (
+            sortedFiles.map((file) => (
               <FileContextMenu
                 key={file.relativePath}
                 file={file}

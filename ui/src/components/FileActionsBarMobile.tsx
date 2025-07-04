@@ -4,6 +4,7 @@ import { MoreVertical, Upload, FolderPlus, Download, Archive, Trash2, Edit3, Fol
 import { cn } from '@/utils/cn';
 import { useFileManager } from '@/contexts/FileManagerContext';
 import { useAuth } from '@/contexts/AuthContext';
+import type { SortField, SortDirection } from '@/contexts/FileManagerContext';
 
 interface FileActionsBarMobileProps {
   onUpload: () => void;
@@ -24,7 +25,7 @@ export const FileActionsBarMobile: React.FC<FileActionsBarMobileProps> = ({
   onArchive,
   onDownload,
 }) => {
-  const { selectedFiles } = useFileManager();
+  const { selectedFiles, sortField, setSortField, sortDirection, setSortDirection } = useFileManager();
   const { hasPermission } = useAuth();
   const hasSelection = selectedFiles.length > 0;
   const singleSelection = selectedFiles.length === 1;
@@ -174,6 +175,31 @@ export const FileActionsBarMobile: React.FC<FileActionsBarMobileProps> = ({
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
+      
+      {/* Sort dropdown for mobile */}
+      <select
+        value={`${sortField}-${sortDirection}`}
+        onChange={(e) => {
+          const [field, direction] = e.target.value.split('-') as [SortField, SortDirection];
+          setSortField(field);
+          setSortDirection(direction);
+        }}
+        className={cn(
+          "inline-flex items-center px-2 py-2 text-sm font-medium rounded-lg",
+          "text-gray-900 bg-white border border-gray-300",
+          "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
+          "dark:border-gray-600 dark:focus:ring-gray-700"
+        )}
+      >
+        <option value="name-asc">Name ↑</option>
+        <option value="name-desc">Name ↓</option>
+        <option value="size-asc">Size ↑</option>
+        <option value="size-desc">Size ↓</option>
+        <option value="creatingTime-asc">Date ↑</option>
+        <option value="creatingTime-desc">Date ↓</option>
+        <option value="extension-asc">Ext ↑</option>
+        <option value="extension-desc">Ext ↓</option>
+      </select>
     </div>
   );
 };

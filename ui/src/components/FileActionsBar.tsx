@@ -2,6 +2,7 @@ import React from 'react';
 import { Upload, FolderPlus, Download, Archive, Trash2, Edit3, FolderInput } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useFileManager } from '../contexts/FileManagerContext';
+import type { SortField, SortDirection } from '../contexts/FileManagerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { FileActionsBarMobile } from './FileActionsBarMobile';
 
@@ -24,7 +25,7 @@ export const FileActionsBar: React.FC<FileActionsBarProps> = ({
   onArchive,
   onDownload,
 }) => {
-  const { selectedFiles } = useFileManager();
+  const { selectedFiles, sortField, setSortField, sortDirection, setSortDirection } = useFileManager();
   const { hasPermission } = useAuth();
   const hasSelection = selectedFiles.length > 0;
   const singleSelection = selectedFiles.length === 1;
@@ -175,6 +176,37 @@ export const FileActionsBar: React.FC<FileActionsBarProps> = ({
             <span>Delete</span>
           </button>
         )}
+        
+        {/* Separator before sort options */}
+        <div className="flex-1" />
+        
+        {/* Sort dropdown */}
+        <div className="relative">
+          <select
+            value={`${sortField}-${sortDirection}`}
+            onChange={(e) => {
+              const [field, direction] = e.target.value.split('-') as [SortField, SortDirection];
+              setSortField(field);
+              setSortDirection(direction);
+            }}
+            className={cn(
+              "inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg",
+              "text-gray-900 bg-white border border-gray-300 hover:bg-gray-100",
+              "focus:ring-4 focus:ring-gray-200 dark:bg-gray-800 dark:text-white",
+              "dark:border-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-700",
+              "cursor-pointer"
+            )}
+          >
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="size-asc">Size (Smallest)</option>
+            <option value="size-desc">Size (Largest)</option>
+            <option value="creatingTime-asc">Date (Oldest)</option>
+            <option value="creatingTime-desc">Date (Newest)</option>
+            <option value="extension-asc">Extension (A-Z)</option>
+            <option value="extension-desc">Extension (Z-A)</option>
+          </select>
+        </div>
       </div>
       </div>
     </div>

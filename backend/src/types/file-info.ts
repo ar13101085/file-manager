@@ -3,5 +3,6 @@ interface FileInfo {
     name: string,
     relativePath: string,
     size: string,
+    sizeBytes: number,
     creatingTime: string
 }

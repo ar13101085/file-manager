@@ -183,6 +183,7 @@ export async function getFileDetails(path: string): Promise<FileInfo> {
         name: Path.basename(path),
         relativePath: Path.relative(rootDir, path),
         size: filesize(stat.size) as string,
+        sizeBytes: stat.size,
         creatingTime: moment(stat.ctime).format("DD-MM-YYYY hh:mm:ss")
 
     };
