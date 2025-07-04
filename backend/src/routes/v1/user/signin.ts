@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/signin", async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { username, password }: { username: string, password: string } = req.body;
+        const { username, password } = req.body;
         
         if (!username || !password) {
             throw new GeneralError("Username and password are required");

@@ -113,14 +113,16 @@ router.put("/users/:userId",
                 throw new NotFound("User not found");
             }
 
+            // Build update object with only provided fields
+            const updateData: any = {};
+            if (email !== undefined) updateData.email = email;
+            if (password !== undefined) updateData.password = password;
+            if (role !== undefined) updateData.role = role;
+            if (permissions !== undefined) updateData.permissions = permissions;
+            if (isActive !== undefined) updateData.isActive = isActive;
+
             // Update user
-            const updatedUser = await UserModel.update(userId, {
-                email,
-                password,
-                role,
-                permissions,
-                isActive
-            });
+            const updatedUser = await UserModel.update(userId, updateData);
 
             if (!updatedUser) {
                 throw new GeneralError("Failed to update user");

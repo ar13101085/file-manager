@@ -62,7 +62,12 @@ export class UserModel {
   static async findById(id: string): Promise<User | null> {
     try {
       const userStr = await userDb.get(id);
-      return JSON.parse(userStr);
+      const user = JSON.parse(userStr);
+      // Ensure all fields are present
+      if (!user || typeof user !== 'object') {
+        return null;
+      }
+      return user;
     } catch (error) {
       return null;
     }
@@ -90,28 +95,37 @@ export class UserModel {
     const user = await this.findById(id);
     if (!user) return null;
 
-    // If updating email or role, need to update indexes
+    // Create a copy of the user to update
+    const updatedUser: User = { ...user };
+
+    // Update email if provided
     if (data.email && data.email !== user.email) {
       await userDb.del(`email:${user.email}`);
       await userDb.put(`email:${data.email.toLowerCase()}`, id);
+      updatedUser.email = data.email.toLowerCase();
     }
 
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
+    // Update password only if explicitly provided
+    if (data.password && data.password.length > 0) {
+      updatedUser.password = await bcrypt.hash(data.password, 10);
     }
 
-    const updatedData: any = { ...data };
-    
+    // Update role if provided
+    if (data.role !== undefined) {
+      updatedUser.role = data.role;
+    }
+
+    // Update isActive if provided
+    if (data.isActive !== undefined) {
+      updatedUser.isActive = data.isActive;
+    }
+
+    // Update permissions if provided
     if (data.permissions) {
-      updatedData.permissions = { ...user.permissions, ...data.permissions };
+      updatedUser.permissions = { ...user.permissions, ...data.permissions };
     }
 
-    const updatedUser: User = {
-      ...user,
-      ...updatedData,
-      email: data.email ? data.email.toLowerCase() : user.email
-    };
-
+    // Save the updated user
     await userDb.put(id, JSON.stringify(updatedUser));
     return updatedUser;
   }
@@ -141,7 +155,14 @@ export class UserModel {
   }
 
   static async verifyPassword(user: User, password: string): Promise<boolean> {
-    return await bcrypt.compare(password, user.password);
+    try {
+      if (!user.password || !password) {
+        return false;
+      }
+      return await bcrypt.compare(password, user.password);
+    } catch (error) {
+      return false;
+    }
   }
 
   static async updateLastLogin(id: string): Promise<void> {
