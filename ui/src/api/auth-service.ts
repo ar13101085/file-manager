@@ -110,6 +110,19 @@ export const authService = {
     return userStr ? JSON.parse(userStr) : null;
   },
 
+  getCurrentUserFromServer: async (): Promise<any> => {
+    const { data } = await authApi.get<AuthResponse>('/auth/me');
+    if (data.isSuccess && data.data) {
+      // Update local storage with fresh data
+      const currentToken = localStorage.getItem('token');
+      if (currentToken) {
+        localStorage.setItem('user', JSON.stringify(data.data));
+      }
+      return data.data;
+    }
+    return null;
+  },
+
   getToken: () => {
     return localStorage.getItem('token');
   },

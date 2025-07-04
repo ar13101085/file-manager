@@ -33,6 +33,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
   checkSetup: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   hasPermission: (permission: keyof User['permissions']) => boolean;
 }
 
@@ -117,6 +118,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate('/login');
   };
 
+  const refreshUser = async () => {
+    try {
+      const freshUser = await authService.getCurrentUserFromServer();
+      if (freshUser) {
+        setUser(freshUser);
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+      // Fall back to local storage
+      const storedUser = authService.getCurrentUser();
+      if (storedUser) {
+        setUser(storedUser);
+      }
+    }
+  };
+
   const hasPermission = (permission: keyof User['permissions']): boolean => {
     if (!user) return false;
     if (user.role === 'admin') return true;
@@ -133,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     logoutAll,
     checkSetup,
+    refreshUser,
     hasPermission,
   };
 

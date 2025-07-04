@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Loader2 } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { adminService } from '../../api/admin-service';
 import { cn } from '../../utils/cn';
 import { PermissionsEditor } from './PermissionsEditor';
@@ -21,6 +22,7 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
   onSuccess,
 }) => {
   const toast = useToastContext();
+  const { user: currentUser, refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   
   const [formData, setFormData] = useState<UpdateUserDto>({
@@ -63,6 +65,14 @@ export const EditUserDialog: React.FC<EditUserDialogProps> = ({
     try {
       await adminService.updateUser(user.id, updateData);
       toast.success('User updated successfully');
+      
+      // If we updated the current user's permissions, refresh their data
+      if (currentUser && currentUser.id === user.id) {
+        await refreshUser();
+        // Force a page reload to update UI with new permissions
+        window.location.reload();
+      }
+      
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
