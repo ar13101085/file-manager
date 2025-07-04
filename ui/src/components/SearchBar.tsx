@@ -113,12 +113,17 @@ export const SearchBar: React.FC = () => {
     inputRef.current?.focus();
   };
 
-  // Reset search when path changes
+  // Reset search results when path changes but keep query
   useEffect(() => {
-    setQuery('');
+    // Don't clear the query, just close the dropdown
     setResults([]);
     setIsOpen(false);
     setIsLoading(false);
+    
+    // If there's a query, perform local search on the new path
+    if (query) {
+      performLocalSearch(query);
+    }
     
     return () => {
       if (abortControllerRef.current) {
@@ -174,7 +179,10 @@ export const SearchBar: React.FC = () => {
       const parentPath = file.relativePath.split('/').slice(0, -1).join('/');
       navigate('/' + parentPath);
     }
-    clearSearch();
+    // Close dropdown but keep the search query
+    setIsOpen(false);
+    setSelectedIndex(-1);
+    // Don't clear the search query
   };
 
   const getParentPath = (relativePath: string) => {
