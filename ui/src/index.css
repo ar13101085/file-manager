@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Ensure Radix UI portals appear above other content */
+  [data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
+  }
+}
+
+@layer utilities {
+  .cursor-context-menu {
+    cursor: default;
+  }
+}
