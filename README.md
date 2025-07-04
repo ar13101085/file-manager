@@ -4,6 +4,76 @@ A full-stack web-based file manager with a modern UI, built with React, TypeScri
 
 ![File Manager](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Node.js](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)
+![React](https://img.shields.io/badge/react-19.0.0-blue.svg)
+![TypeScript](https://img.shields.io/badge/typescript-5.0.0-blue.svg)
+
+## 📋 Table of Contents
+
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [API Endpoints](#api-endpoints)
+- [Permission System](#permission-system)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Security Features](#security-features)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Screenshots
+
+### Home Screen
+![Home Screen](screenshots/home.png)
+*Clean and modern file manager interface with breadcrumb navigation*
+
+### Authentication
+![Login Screen](screenshots/login.png)
+*Secure login page*
+
+![Signup First User](screenshots/signup_root_user.png)
+*First user registration becomes admin automatically*
+
+### File Operations
+![Drag and Drop Upload](screenshots/drag_drop.png)
+*Drag and drop files directly into the browser*
+
+![Upload Dialog](screenshots/upload_via_dialog.png)
+*Traditional file upload dialog*
+
+![Multiple File Upload](screenshots/multiple-file-upload-with-cancel-feature.png)
+*Upload multiple files with progress tracking and ability to cancel*
+
+### Search Features
+![Advanced Search](screenshots/search_nested_file_with_autocomplete_and_local_search.png)
+*Powerful search with autocomplete, nested folder search, and local filtering*
+
+### User Management
+![User Management](screenshots/user_management.png)
+*Admin dashboard for managing users*
+
+![Add New User](screenshots/add_new_user.png)
+*Create new users with custom permissions*
+
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/file-manager.git
+cd file-manager
+
+# Install and start backend
+cd backend
+npm install
+npm run dev
+
+# In a new terminal, install and start frontend
+cd ../ui
+npm install
+npm run dev
+
+# Open http://localhost:5173 in your browser
+```
 
 ## Features
 
