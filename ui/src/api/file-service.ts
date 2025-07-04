@@ -98,4 +98,14 @@ export const fileService = {
     });
     return data;
   },
+
+  searchFiles: async (query: string, path?: string, signal?: AbortSignal): Promise<FileInfo[]> => {
+    const params = new URLSearchParams({ q: query });
+    if (path) params.append('path', path);
+    
+    const { data } = await api.get<{ data: FileInfo[] }>(`/file/search?${params.toString()}`, {
+      signal
+    });
+    return data.data;
+  },
 };

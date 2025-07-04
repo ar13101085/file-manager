@@ -7,34 +7,12 @@ import { Tooltip } from './ui/tooltip';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { cn } from '../utils/cn';
 import { useNavigate } from 'react-router-dom';
+import { SearchBar } from './SearchBar';
 
 export const Header: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const { files, setFiles } = useFileManager();
-  const [originalFiles, setOriginalFiles] = useState(files);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Store original files when they change (not from search)
-    if (searchQuery === '') {
-      setOriginalFiles(files);
-    }
-  }, [files, searchQuery]);
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    
-    if (query.trim() === '') {
-      setFiles(originalFiles);
-    } else {
-      const filtered = originalFiles.filter(file => 
-        file.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setFiles(filtered);
-    }
-  };
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
@@ -47,18 +25,7 @@ export const Header: React.FC = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <Search className="w-5 h-5 text-gray-400" />
-            </div>
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Search files..."
-            />
-          </div>
+          <SearchBar />
           
           <Tooltip content="Keyboard Shortcuts">
             <button

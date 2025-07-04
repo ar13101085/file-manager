@@ -189,3 +189,40 @@ export async function getFileDetails(path: string): Promise<FileInfo> {
     };
     return fileInfo;
 }
+
+export async function searchFilesRecursively(searchTerm: string, startPath: string = '', maxResults: number = 50): Promise<FileInfo[]> {
+    const results: FileInfo[] = [];
+    const searchLower = searchTerm.toLowerCase();
+    
+    async function searchDir(dirPath: string): Promise<void> {
+        if (results.length >= maxResults) return;
+        
+        try {
+            const fullPath = Path.join(rootDir, dirPath);
+            const files = await fsAsync.readdir(fullPath);
+            
+            for (const file of files) {
+                if (results.length >= maxResults) break;
+                
+                const filePath = Path.join(fullPath, file);
+                const fileInfo = await getFileDetails(filePath);
+                
+                // Check if filename matches search term
+                if (fileInfo.name.toLowerCase().includes(searchLower)) {
+                    results.push(fileInfo);
+                }
+                
+                // Recursively search subdirectories
+                if (fileInfo.isDirectory) {
+                    await searchDir(Path.join(dirPath, file));
+                }
+            }
+        } catch (error) {
+            // Skip directories we can't access
+            console.error(`Error searching directory ${dirPath}:`, error);
+        }
+    }
+    
+    await searchDir(startPath);
+    return results;
+}
