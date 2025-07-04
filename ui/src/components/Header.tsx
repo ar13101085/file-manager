@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FolderOpen, Search } from 'lucide-react';
+import { FolderOpen, Search, HelpCircle } from 'lucide-react';
 import { useFileManager } from '../contexts/FileManagerContext';
+import { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog';
+import { Tooltip } from './ui/tooltip';
 
 export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const { files, setFiles } = useFileManager();
   const [originalFiles, setOriginalFiles] = useState(files);
 
@@ -50,8 +53,23 @@ export const Header: React.FC = () => {
               placeholder="Search files..."
             />
           </div>
+          
+          <Tooltip content="Keyboard Shortcuts">
+            <button
+              onClick={() => setShowShortcuts(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+              aria-label="Show keyboard shortcuts"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+          </Tooltip>
         </div>
       </div>
+      
+      <KeyboardShortcutsDialog 
+        open={showShortcuts} 
+        onOpenChange={setShowShortcuts} 
+      />
     </header>
   );
 };
