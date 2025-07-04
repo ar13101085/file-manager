@@ -28,22 +28,23 @@ export const FileActionsBar: React.FC<FileActionsBarProps> = ({
   const singleSelection = selectedFiles.length === 1;
 
   return (
-    <div className="px-4 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-      {/* Mobile view with dropdown */}
-      <div className="sm:hidden">
-        <FileActionsBarMobile
-          onUpload={onUpload}
-          onCreateFolder={onCreateFolder}
-          onDelete={onDelete}
-          onRename={onRename}
-          onMove={onMove}
-          onArchive={onArchive}
-          onDownload={onDownload}
-        />
-      </div>
-      
-      {/* Desktop view with all buttons */}
-      <div className="hidden sm:flex flex-wrap items-center gap-2">
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <div className="max-w-screen-xl mx-auto px-4 py-3">
+        {/* Mobile view with dropdown */}
+        <div className="sm:hidden">
+          <FileActionsBarMobile
+            onUpload={onUpload}
+            onCreateFolder={onCreateFolder}
+            onDelete={onDelete}
+            onRename={onRename}
+            onMove={onMove}
+            onArchive={onArchive}
+            onDownload={onDownload}
+          />
+        </div>
+        
+        {/* Desktop view with all buttons */}
+        <div className="hidden sm:flex flex-wrap items-center gap-2">
         <button
           onClick={onUpload}
           className={cn(
@@ -154,6 +155,7 @@ export const FileActionsBar: React.FC<FileActionsBarProps> = ({
           <Trash2 className="w-4 h-4 mr-2 flex-shrink-0" />
           <span>Delete</span>
         </button>
+      </div>
       </div>
     </div>
   );
