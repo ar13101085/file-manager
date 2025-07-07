@@ -1,0 +1,7 @@
+version: "3"
+services:
+  react-file-manager:
+    build: .
+    ports:
+      - 11000:80
+    container_name: react-file-manager
